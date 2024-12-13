@@ -1,13 +1,26 @@
 #include <iostream>
-#include <random>
 #include <vector>
 #include <string>
+#include <cctype>
+#include <cstdlib>
+
+class Sensor;
+class Robot;
+class Obstacle;
+class Environment;
 
 //to-do
 //fazer clausula na movimentação para caso haja algum obstáculo
 
 
 using namespace std;
+
+void printMenu() {
+    cout << "O que você deseja fazer? " << endl;
+    cout << "[ 1 ] Mover o personagem" << endl;
+    cout << "[ 2 ] Rotacionar robô" << endl;
+    cout << "[ 0 ] Sair do modelo" << endl;
+}
 
 class Sensor {
     private:
@@ -19,14 +32,8 @@ class Sensor {
         Sensor(): range(0), noise(0) {}
         //construtor
         Sensor(int r) {
-            //modelo de aleatorização de números (optei por usar algo mais robusto que o ctime)
-
-            random_device rd; //inicialização do modelo
-            mt19937 gen(rd()); //definição do motor dos pseudoaleatórios
-            uniform_real_distribution<> dis(0.250000001, 0.75); //definição de intervalo
-
-            range = dis(gen); //geração do numero
-
+            range = r;
+            //aleatorização de ruído
             noise = (rand() % 50 + 25) / 100;
         }
 
@@ -36,6 +43,32 @@ class Sensor {
         }
             
 
+};
+
+
+
+class Obstacle {
+    private:
+        int posX, posY, size;
+    
+    public:
+        Obstacle(int pX, int pY, int s) {
+            posX = pX;
+            posY = pY;
+            size = s;
+        }
+
+        //getters
+        int get_x() {
+            return posX;
+        }
+
+        int get_y() {
+            return posY;
+        }
+        int get_size() {
+            return size;
+        }
 };
 
 //classe de ações do robô
@@ -63,17 +96,17 @@ class Robot {
             return posY;
         }
 
-        //setters
-        int set_x(int n){
-            return posX += n;
-        }
-
-        int set_y(int n) {
-            return posY += n;
+        int get_theta() {
+            return theta;
         }
 
         void move(int dist) {
             //condição para definir a direção da movimentação
+
+            if (dist > sensor.readDistance()) {
+                cout << "Você está querendo ir longe demais! O sensor do " << name << " não consegue detectar tão longe!";
+                return;
+            }
             switch (theta) {
                 case 0:
                     posX += dist;
@@ -85,7 +118,7 @@ class Robot {
                     posY += dist;
                     return;
                 case 270:
-                    posX += dist;
+                    posY -= dist;
                     return;
                 default:
                     return;
@@ -97,7 +130,9 @@ class Robot {
         void turn(int angle) {
             //tratamento de rotação
             if (angle != 90 && angle != 180 && angle != 270) {
-                throw invalid_argument("Faça a rotação apenas com 90, 180 e 270 (360 e 0 retornariam a mesma rotação)");
+                //rotação de 360 e 0 retornariam a mesma angulação
+                cout << "Faça a rotação apenas com 90, 180 e 270.";
+                return;
             }
 
             //tratamento de angulação
@@ -111,37 +146,12 @@ class Robot {
 
         bool detect(Obstacle obs) {
             //detecção de obstáculos baseada na angulação do robô e distancia de detecção do sensor
-            if (obs.get_x() - this->posX - (obs.get_size()/2) <= sensor.readDistance() && (theta == 0 || theta == 180) ) {
-                return true;
+            if (theta == 0 || theta == 180) {
+                return abs(obs.get_x() - posX) <= sensor.readDistance() + (obs.get_size() /2);
             }
-            else if (obs.get_y() - this->posY - (obs.get_size()/2) <= sensor.readDistance() && (theta == 90 || theta == 270)) {
-                return true;
+            if (theta == 90 || theta == 270) {
+                return abs(obs.get_y() - posY) <= sensor.readDistance() + (obs.get_size() /2);
             }
-            return false;
-        }
-};
-
-class Obstacle {
-    private:
-        int posX, posY, size;
-    
-    public:
-        Obstacle(int pX, int pY, int s) {
-            posX = pX;
-            posY = pY;
-            size = s;
-        }
-
-        //getters
-        int get_x() {
-            return posX;
-        }
-
-        int get_y() {
-            return posY;
-        }
-        int get_size() {
-            return size;
         }
 };
 
@@ -152,28 +162,62 @@ class Enviroment {
         vector <Obstacle> obsList;
 
     public:
+    
+        void createRobot(string n, Sensor s, int px, int py){
+            Robot robot(n,s,px,py);
+            robotList.push_back(robot);
+        }
+        void createObs(int px, int py, int s){
+            Obstacle obs(px,py,s);
+            obsList.push_back(obs);
+        }
         void simulate() {
-            int x, y, robPos;
-            char resp;
-            cout << "Deseja se movimentar? [S/N] " << endl;
+            int x, y, robPos, dist, resp;
+            while (1){
+            printMenu();
             cin >> resp;
 
-            if (resp == 'S') {
-                for (int i = 0; i < robotList.size(); i++) {
-                    cout << i + 1 << " - " << robotList[i].name << endl;
-                }
-                cout << "Escolha seu robÔ: " << endl;
-                cin >> robPos;
-                robPos -= 1;
-                cout << "Em X ou Y? " << endl;
-                cin >> resp;
-                if (resp == 'X') {
-                    robotList[robPos].set_x(1);
-                } else if (resp == 'Y') {
-                    robotList[robPos].set_y(1);
-                } else {
-                    cout << "Respota Inválida!" << endl;
-                }
+            system("cls");
+
+            switch (resp) {
+                case 1:
+                    for (int i = 0; i < robotList.size(); i++) {
+                        cout << i + 1 << " - " << robotList[i].name << " - " << " ângulo = " << robotList[i].get_theta() << " - X: " << robotList[i].get_x()  << " - Y: " << robotList[i].get_y() << endl;
+                    }
+                    cout << "Escolha seu robô: " << endl;
+                    cin >> robPos;
+                    robPos -= 1;
+                    cout << "Quantas casas você deseja que " << robotList[robPos].name << " mova?";
+                    cin >> dist;
+                    for (int a = 0; a < obsList.size(); a++) {
+                        if (!(robotList[robPos].detect(obsList[a]))) {
+                            robotList[robPos].move(dist);
+                            break;
+                    }
+                    }
+                    break;
+
+                case 2:
+                int g;
+                    cout << "Digite a angulação (em graus) que você deseja rotacionar: ";
+                    cin >> g;
+                    robotList[robPos].turn(g);
+                    break;
+
+                case 0:
+                    break;
+            }
+            }      
+                
             } 
-        }
-};
+        };
+
+int main() {
+    Enviroment env;
+    Sensor sensor(5);
+    env.createRobot("Teste", sensor, 0,0);
+    env.createObs(1,2,1);
+
+    env.simulate();
+    return 0;
+}
