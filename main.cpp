@@ -100,6 +100,9 @@ class Robot {
         int get_theta() {
             return theta;
         }
+        Sensor get_sensor() {
+            return sensor;
+        }
         void set_x(int x) {
             posX = x;
         }
@@ -111,10 +114,6 @@ class Robot {
         void move(int dist) {
             //condição para definir a direção da movimentação
 
-            if (dist > sensor.readDistance()) {
-                cout << "Você está querendo ir longe demais! O sensor do " << name << " não consegue detectar tão longe!" << endl;
-                return;
-            }
             switch (theta) {
                 case 0:
                     posX += dist;
@@ -178,6 +177,8 @@ class Enviroment {
             Obstacle obs(px,py,s);
             obsList.push_back(obs);
         }
+
+        
         void simulate() {
             int x, y, robPos, dist, resp;
             bool canMove;
@@ -200,12 +201,16 @@ class Enviroment {
                     canMove = true;
                     
                     for (int a = 0; a < obsList.size(); a++) {
+                        if (dist > robotList[robPos].get_sensor().readDistance()) {
+                            cout << "Você está querendo ir longe demais! O sensor do " << robotList[robPos].name << " não consegue detectar tão longe!" << endl;
+                            break;
+                        }
                         if (robotList[robPos].detect(obsList[a])) {
-                            if (robotList[robPos].get_theta() == 0 || robotList[robPos].get_theta() == 180) {
+                            if (robotList[robPos].get_theta() == 0 || robotList[robPos].get_theta() == 180) {                                
                                 for (int j = 1; j <= dist; j++) {
                                     robotList[robPos].move(1);
                                     if (robotList[robPos].get_x() == obsList[a].get_x()) {
-                                        robotList[robPos].move(1);
+                                        robotList[robPos].move(1 + obsList[a].get_size()/2);
                                         break;
                                     } 
                                 }
@@ -213,7 +218,7 @@ class Enviroment {
                                 for (int j = 1; j <= dist; j++) {
                                     robotList[robPos].move(1);
                                     if (robotList[robPos].get_y() == obsList[a].get_y()) {
-                                        robotList[robPos].move(1);
+                                        robotList[robPos].move(1 + obsList[a].get_size()/2);
                                     } 
                                 }
                             }
@@ -222,9 +227,6 @@ class Enviroment {
                             canMove = false;
                             break;
                     }
-                    }
-                    if (canMove) {
-                        robotList[robPos].move(dist);
                     }
                     break;
 
