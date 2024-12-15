@@ -34,11 +34,12 @@ class Sensor {
         Sensor(int r) {
             range = r;
             //aleatorização de ruído
-            noise = (rand() % 50 + 25) / 100;
+            noise = (rand() % 50 + 25) / 100.0;
         }
 
         //cálculo de distância
         float readDistance() {
+            cout << range << " " << noise << endl;
             return range*noise;
         }
             
@@ -99,29 +100,34 @@ class Robot {
         int get_theta() {
             return theta;
         }
+        void set_x(int x) {
+            posX = x;
+        }
+        void set_y(int y) {
+            posY = y;
+        }
+        
 
         void move(int dist) {
             //condição para definir a direção da movimentação
 
             if (dist > sensor.readDistance()) {
-                cout << "Você está querendo ir longe demais! O sensor do " << name << " não consegue detectar tão longe!";
+                cout << "Você está querendo ir longe demais! O sensor do " << name << " não consegue detectar tão longe!" << endl;
                 return;
             }
             switch (theta) {
                 case 0:
                     posX += dist;
-                    return;
+                    break;
                 case 180:
                     posX -= dist;
-                    return;
+                    break;
                 case 90:
                     posY += dist;
-                    return;
+                    break;
                 case 270:
                     posY -= dist;
-                    return;
-                default:
-                    return;
+                    break;
             }
 
         }
@@ -152,6 +158,7 @@ class Robot {
             if (theta == 90 || theta == 270) {
                 return abs(obs.get_y() - posY) <= sensor.readDistance() + (obs.get_size() /2);
             }
+            return false;
         }
 };
 
@@ -173,6 +180,7 @@ class Enviroment {
         }
         void simulate() {
             int x, y, robPos, dist, resp;
+            bool canMove;
             while (1){
             printMenu();
             cin >> resp;
@@ -189,16 +197,39 @@ class Enviroment {
                     robPos -= 1;
                     cout << "Quantas casas você deseja que " << robotList[robPos].name << " mova?";
                     cin >> dist;
+                    canMove = true;
+                    
                     for (int a = 0; a < obsList.size(); a++) {
-                        if (!(robotList[robPos].detect(obsList[a]))) {
-                            robotList[robPos].move(dist);
+                        if (robotList[robPos].detect(obsList[a])) {
+                            if (robotList[robPos].get_theta() == 0 || robotList[robPos].get_theta() == 180) {
+                                for (int j = 1; j <= dist; j++) {
+                                    robotList[robPos].move(1);
+                                    if (robotList[robPos].get_x() == obsList[a].get_x()) {
+                                        robotList[robPos].move(1);
+                                        break;
+                                    } 
+                                }
+                            } else {
+                                for (int j = 1; j <= dist; j++) {
+                                    robotList[robPos].move(1);
+                                    if (robotList[robPos].get_y() == obsList[a].get_y()) {
+                                        robotList[robPos].move(1);
+                                    } 
+                                }
+                            }
+                                
+                            cout << "O robô detectou um obstáculo!!";
+                            canMove = false;
                             break;
                     }
+                    }
+                    if (canMove) {
+                        robotList[robPos].move(dist);
                     }
                     break;
 
                 case 2:
-                int g;
+                    int g;
                     cout << "Digite a angulação (em graus) que você deseja rotacionar: ";
                     cin >> g;
                     robotList[robPos].turn(g);
@@ -216,7 +247,7 @@ int main() {
     Enviroment env;
     Sensor sensor(5);
     env.createRobot("Teste", sensor, 0,0);
-    env.createObs(1,2,1);
+    env.createObs(3, 0, 1);
 
     env.simulate();
     return 0;
