@@ -3,6 +3,8 @@
 #include <string>
 #include <cctype>
 #include <cstdlib>
+#include <ctime>
+#include <random>
 
 class Sensor;
 class Robot;
@@ -27,14 +29,18 @@ class Sensor {
         float range, noise;
 
     public:
-
         //construtor padrão
         Sensor(): range(0), noise(0) {}
         //construtor
         Sensor(int r) {
             range = r;
             //aleatorização de ruído
-            noise = (rand() % 50 + 25) / 100.0;
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_real_distribution<> dis(0.25, 0.75);
+
+            noise = dis(gen);
+
         }
 
         //cálculo de distância
@@ -178,7 +184,7 @@ class Enviroment {
             obsList.push_back(obs);
         }
 
-        
+        //ambiente de simulação do modelo
         void simulate() {
             int x, y, robPos, dist, resp;
             bool canMove;
@@ -188,6 +194,7 @@ class Enviroment {
 
             system("cls");
 
+            //condicional de ação do usuário
             switch (resp) {
                 case 1:
                     for (int i = 0; i < robotList.size(); i++) {
@@ -201,7 +208,7 @@ class Enviroment {
                     canMove = true;
                     
                     for (int a = 0; a < obsList.size(); a++) {
-                        if (dist > robotList[robPos].get_sensor().readDistance()) {
+                        if (dist > robotList[robPos].detect(obsList[a])) {
                             cout << "Você está querendo ir longe demais! O sensor do " << robotList[robPos].name << " não consegue detectar tão longe!" << endl;
                             break;
                         }
@@ -225,7 +232,6 @@ class Enviroment {
                                 
                             cout << "O robô detectou um obstáculo!!";
                             canMove = false;
-                            break;
                     }
                     }
                     break;
@@ -246,6 +252,7 @@ class Enviroment {
         };
 
 int main() {
+    srand(time(0));
     Enviroment env;
     Sensor sensor(5);
     env.createRobot("Teste", sensor, 0,0);
