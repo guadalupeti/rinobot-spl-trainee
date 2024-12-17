@@ -200,7 +200,7 @@ class Enviroment {
             for (int r = 0; r < robotList.size(); r++) {
                 map[robotList[r].get_y()][robotList[r].get_x()] = '@';
             }
-            for (int o = 0; o < robotList.size(); o++) {
+            for (int o = 0; o < obsList.size(); o++) {
                 map[obsList[o].get_y()][obsList[o].get_x()] = 'X';
             }
 
@@ -302,6 +302,12 @@ int main() {
     Sensor sensor(5);
     env.createRobot("Teste", sensor, 0,0);
     env.createObs(3, 0, 1);
+    env.createObs(2, 1, 1);
+    env.createObs(4, 2, 1);
+    env.createObs(6, 3, 1);
+    env.createObs(8, 4, 1);
+    env.createObs(10, 5, 1);
+    env.createObs(12, 6, 1);
 
     env.simulate();
     return 0;
