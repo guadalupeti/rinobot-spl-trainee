@@ -165,6 +165,7 @@ class Robot {
             }
             return false;
         }
+
 };
 
 class Enviroment {
@@ -172,9 +173,10 @@ class Enviroment {
     //definição de vetores para escolha de obstáculo 
         vector <Robot> robotList;
         vector <Obstacle> obsList;
+        char map[20][20];
 
     public:
-    
+
         void createRobot(string n, Sensor s, int px, int py){
             Robot robot(n,s,px,py);
             robotList.push_back(robot);
@@ -184,12 +186,34 @@ class Enviroment {
             obsList.push_back(obs);
         }
 
+        void setMap() {
+            for (int i = 0; i < 20; i++) {
+                for (int j = 0; j < 20; j++) {
+                    map[i][j] = '.';
+                }
+            }
+            for (int r = 0; r < robotList.size(); r++) {
+                map[robotList[r].get_y()][robotList[r].get_x()] = '@';
+            }
+            for (int o = 0; o < robotList.size(); o++) {
+                map[obsList[o].get_y()][obsList[o].get_x()] = 'X';
+            }
+
+            for (int i = 0; i < 20; i++) {
+                for (int j = 0; j < 20; j++) {
+                    cout << map[i][j] << " ";
+                }
+                cout << endl;
+            }
+        }
+
         //ambiente de simulação do modelo
         void simulate() {
             int x, y, robPos, dist, resp;
             bool canMove;
             while (1){
             printMenu();
+            setMap();
             cin >> resp;
 
             system("cls");
@@ -208,6 +232,10 @@ class Enviroment {
                     canMove = true;
                     
                     for (int a = 0; a < obsList.size(); a++) {
+                        if ((robotList[robPos].get_x() + dist >= 20 || robotList[robPos].get_x() + dist >= 20) || (robotList[robPos].get_x() + dist < 0 || robotList[robPos].get_x() + dist < 0)) {
+                            cout << "Você não pode sair do mapa!";
+                            break;
+                        }
                         if (!robotList[robPos].detect(obsList[a])) {
                         robotList[robPos].move(dist);
                     }
@@ -244,11 +272,16 @@ class Enviroment {
 
                 case 2:
                     int g;
+                    for (int i = 0; i < robotList.size(); i++) {
+                        cout << i + 1 << " - " << robotList[i].name << " - " << " ângulo = " << robotList[i].get_theta() << " - X: " << robotList[i].get_x()  << " - Y: " << robotList[i].get_y() << endl;
+                    }
+                    cout << "Escolha seu robô: " << endl;
+                    cin >> robPos;
+                    robPos -= 1;
                     cout << "Digite a angulação (em graus) que você deseja rotacionar: ";
                     cin >> g;
                     robotList[robPos].turn(g);
                     break;
-
                 case 0:
                     break;
             }
