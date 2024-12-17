@@ -11,11 +11,16 @@ class Robot;
 class Obstacle;
 class Environment;
 
-//to-do
-//fazer clausula na movimentação para caso haja algum obstáculo
-
-
 using namespace std;
+
+void clearTerminal() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
 
 void printMenu() {
     cout << "O que você deseja fazer? " << endl;
@@ -216,7 +221,7 @@ class Enviroment {
             setMap();
             cin >> resp;
 
-            system("cls");
+            clearTerminal();
 
             //condicional de ação do usuário
             switch (resp) {
