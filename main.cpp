@@ -243,6 +243,7 @@ class Enviroment {
                         }
                         if (!robotList[robPos].detect(obsList[a])) {
                         robotList[robPos].move(dist);
+                        break;
                     }
                         if (dist > robotList[robPos].get_sensor().readDistance()) {
                             cout << "Você está querendo ir longe demais! O sensor do " << robotList[robPos].name << " não consegue detectar tão longe!" << endl;
@@ -250,22 +251,19 @@ class Enviroment {
                         }
                         if (robotList[robPos].detect(obsList[a])) {
                             cout << "O robô detectou um obstáculo!" << endl;
-                            if (robotList[robPos].get_theta() == 0 || robotList[robPos].get_theta() == 180) {                                
+
+                          
                                 for (int j = 1; j <= dist; j++) {
                                     robotList[robPos].move(1);
-                                    if (robotList[robPos].get_x() == obsList[a].get_x()) {
-                                        robotList[robPos].move(1 + obsList[a].get_size()/2);
+                                    if (robotList[robPos].get_x() == obsList[a].get_x() && robotList[robPos].get_y() == obsList[a].get_y()) {
+                                        robotList[robPos].move(obsList[a].get_size()/2);
+                                        robotList[robPos].move(1);
                                         break;
-                                    } 
+                                    }
                                 }
-                            } else {
-                                for (int j = 1; j <= dist; j++) {
-                                    robotList[robPos].move(1);
-                                    if (robotList[robPos].get_y() == obsList[a].get_y()) {
-                                        robotList[robPos].move(1 + obsList[a].get_size()/2);
-                                    } 
-                                }
-                            }
+                                
+
+                            
                                 
                             break;
                     }
