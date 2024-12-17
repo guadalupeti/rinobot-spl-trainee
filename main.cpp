@@ -208,7 +208,10 @@ class Enviroment {
                     canMove = true;
                     
                     for (int a = 0; a < obsList.size(); a++) {
-                        if (dist > robotList[robPos].detect(obsList[a])) {
+                        if (!robotList[robPos].detect(obsList[a])) {
+                        robotList[robPos].move(dist);
+                    }
+                        if (dist > robotList[robPos].get_sensor().readDistance()) {
                             cout << "Você está querendo ir longe demais! O sensor do " << robotList[robPos].name << " não consegue detectar tão longe!" << endl;
                             break;
                         }
@@ -230,10 +233,13 @@ class Enviroment {
                                 }
                             }
                                 
-                            cout << "O robô detectou um obstáculo!!";
-                            canMove = false;
+                            break;
                     }
+        
                     }
+                    
+
+                   
                     break;
 
                 case 2:
