@@ -232,7 +232,7 @@ class Enviroment {
                     canMove = true;
                     
                     for (int a = 0; a < obsList.size(); a++) {
-                        if ((robotList[robPos].get_x() + dist >= 20 || robotList[robPos].get_x() + dist >= 20) || (robotList[robPos].get_x() + dist < 0 || robotList[robPos].get_x() + dist < 0)) {
+                        if ((robotList[robPos].get_x() + dist >= 20 || robotList[robPos].get_y() + dist >= 20) || ((robotList[robPos].get_theta() == 180 || robotList[robPos].get_theta() == 270) && (robotList[robPos].get_x() - dist < 0 || robotList[robPos].get_y() - dist < 0))) {
                             cout << "Você não pode sair do mapa!";
                             break;
                         }
@@ -244,6 +244,7 @@ class Enviroment {
                             break;
                         }
                         if (robotList[robPos].detect(obsList[a])) {
+                            cout << "O robô detectou um obstáculo!" << endl;
                             if (robotList[robPos].get_theta() == 0 || robotList[robPos].get_theta() == 180) {                                
                                 for (int j = 1; j <= dist; j++) {
                                     robotList[robPos].move(1);
